@@ -9,8 +9,6 @@
 <meta name="description" content="Staywise & Co. client portal: invoices, payments, weekly progress and files.">
 
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1239,12 +1237,13 @@ h1,h2,h3,p{
 
 <!-- =====================================================
      SUPABASE
-     config.js contains your public Supabase URL + key.
+     Supabase library MUST load before config.js.
+     config.js creates the global supabaseClient.
      ===================================================== -->
 
-<script src="config.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+
+<script src="config.js"></script>
 
 <script>
 /* =========================================================
@@ -1252,20 +1251,23 @@ h1,h2,h3,p{
    Supabase-connected version
    ========================================================= */
 
-const CFG = window.STACKWISE_CONFIG || {};
+/*
+  config.js already creates:
 
-const configured = !!(
-  window.supabase &&
-  CFG.SUPABASE_URL &&
-  CFG.SUPABASE_ANON_KEY
-);
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
-const sb = configured
-  ? window.supabase.createClient(
-      CFG.SUPABASE_URL,
-      CFG.SUPABASE_ANON_KEY
-    )
-  : null;
+  We use that existing client here.
+*/
+
+const sb =
+  typeof supabaseClient !== 'undefined'
+    ? supabaseClient
+    : null;
+
+const configured = !!sb;
 
 
 /* ---------- helpers ---------- */
@@ -3371,6 +3373,82 @@ async function saveInvoice(c,d){
       url:d.url || null
     };
 
+    /*
+      If an existing invoice is being marked Paid,
+      first create the payment using the real invoice,
+      then delete that invoice.
+    */
+
+    if(d.status==='Paid'){
+
+      const existingInvoice = c.invoice;
+
+      if(existingInvoice){
+
+        await markPaid(c);
+
+        return;
+      }
+
+      /*
+        If this is a brand-new invoice being saved
+        directly as Paid, insert it first so it gets
+        a real database ID.
+      */
+
+      const {
+        data:newInvoice,
+        error:insertError
+      } = await sb
+        .from('invoices')
+        .upsert(
+          payload,
+          {
+            onConflict:'client_id'
+          }
+        )
+        .select()
+        .single();
+
+      if(insertError) throw insertError;
+
+      const {
+        error:paymentError
+      } = await sb
+        .from('payments')
+        .insert({
+          client_id:c.id,
+          description:`${d.description} · #${d.number}`,
+          amount:Number(d.amount),
+          currency:(d.currency||'USD').toUpperCase(),
+          paid_on:today(),
+          method:'Bank transfer',
+          reference:d.number,
+          status:'Paid'
+        });
+
+      if(paymentError) throw paymentError;
+
+      const {
+        error:deleteError
+      } = await sb
+        .from('invoices')
+        .delete()
+        .eq('id',newInvoice.id);
+
+      if(deleteError) throw deleteError;
+
+      await refresh();
+
+      toast(
+        'Invoice recorded as paid'
+      );
+
+      render();
+
+      return;
+    }
+
     const {
       error
     } = await sb
@@ -3383,20 +3461,6 @@ async function saveInvoice(c,d){
       );
 
     if(error) throw error;
-
-    if(d.status==='Paid'){
-
-      await markPaid(
-        {
-          ...c,
-          invoice:{
-            ...payload
-          }
-        }
-      );
-
-      return;
-    }
 
     await refresh();
 
