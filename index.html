@@ -6,16 +6,16 @@
 
 <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e0e10" media="(prefers-color-scheme: dark)">
-<meta name="description" content="Staywise & Co. client portal: invoices, payments, weekly progress and files.">
+<meta name="description" content="Stackwise & Co. client portal: invoices, payments, weekly progress and files.">
 
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Staywise">
+<meta name="apple-mobile-web-app-title" content="Stackwise">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-<title>Staywise & Co. · Client Portal</title>
+<title>Stackwise & Co. · Client Portal</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1288,7 +1288,7 @@ h1,h2,h3,p{
 <script>
 
 /* =========================================================
-   Staywise & Co. Client Portal
+   Stackwise & Co. Client Portal
    Multiple-invoice version
    ========================================================= */
 
@@ -1808,7 +1808,7 @@ async function bootstrap(){
         <section class="login-left">
 
           <div class="mini-brand">
-            Staywise &amp; Co.
+            Stackwise &amp; Co.
           </div>
 
           <h1>
@@ -1895,7 +1895,7 @@ function renderLogin(){
     <section class="login-left">
 
       <div class="mini-brand">
-        Staywise &amp; Co.
+        Stackwise &amp; Co.
       </div>
 
       <h1>
@@ -1980,7 +1980,7 @@ function renderLogin(){
       </a>
 
       <p class="copy">
-        © 2026 Staywise &amp; Co.
+        © 2026 Stackwise &amp; Co.
       </p>
 
     </section>
@@ -1999,7 +1999,7 @@ function renderLogin(){
           stroke-width="4.5"
           stroke-linejoin="miter"
           role="img"
-          aria-label="Staywise &amp; Co.">
+          aria-label="Stackwise &amp; Co.">
 
           <rect x="57" y="33" width="76" height="17"/>
           <rect x="35" y="56" width="72" height="17"/>
@@ -2014,7 +2014,7 @@ function renderLogin(){
 
         <b>Need access?</b>
 
-        Ask your Staywise &amp; Co. contact
+        Ask your Stackwise &amp; Co. contact
         for your sign-in details.
 
       </div>
@@ -2167,7 +2167,7 @@ function header(name,sub,avatarHtml){
 
       <div class="brand">
 
-        Staywise &amp; Co.
+        Stackwise &amp; Co.
 
         <small>
           ${esc(sub)}
@@ -2691,7 +2691,7 @@ function renderPortal(c,preview){
 
               <p>
 
-                All of your Staywise &amp; Co.
+                All of your Stackwise &amp; Co.
                 files are stored securely
                 in your shared Google Drive.
 
@@ -2961,7 +2961,7 @@ function renderAdmin(){
   app.innerHTML = `
 
     ${header(
-      'Staywise Admin',
+      'Stackwise Admin',
       'Admin',
       FACE
     )}
@@ -3961,16 +3961,16 @@ async function saveInvoice(c,d){
       client_id:c.id,
 
       number:
-        d.number.trim(),
+        (d.number || '').trim(),
 
       description:
-        d.description.trim(),
+        (d.description || '').trim(),
 
       amount:
         Number(d.amount),
 
       currency:
-        (d.currency||'USD')
+        (d.currency || 'USD')
           .trim()
           .toUpperCase(),
 
@@ -4011,7 +4011,8 @@ async function saveInvoice(c,d){
 
 
     if(
-      !Number.isFinite(payload.amount)
+      !Number.isFinite(payload.amount) ||
+      payload.amount < 0
     ){
 
       toast(
@@ -4074,9 +4075,9 @@ async function saveInvoice(c,d){
 
     /*
       IMPORTANT:
-      This is INSERT, not UPSERT.
+      Use INSERT, not UPSERT.
 
-      This is what allows multiple invoices
+      This allows multiple invoices
       for the same client.
     */
 
@@ -4096,7 +4097,7 @@ async function saveInvoice(c,d){
     /*
       If a brand-new invoice is immediately
       marked Paid, create its payment and
-      then remove the invoice.
+      then remove that invoice.
     */
 
     if(payload.status==='Paid'){
@@ -4157,7 +4158,10 @@ async function saveInvoice(c,d){
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      'SAVE INVOICE ERROR:',
+      error
+    );
 
     toast(
       error.message ||
