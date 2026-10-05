@@ -1237,8 +1237,8 @@ h1,h2,h3,p{
 
 <!-- =====================================================
      SUPABASE
-     Supabase library MUST load before config.js.
-     config.js creates the global supabaseClient.
+     The Supabase library MUST load before config.js.
+     config.js creates window.supabaseClient.
      ===================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -1252,21 +1252,17 @@ h1,h2,h3,p{
    ========================================================= */
 
 /*
-  config.js already creates:
+  config.js creates:
 
-  const supabaseClient = window.supabase.createClient(
+  window.supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
   );
 
-  We use that existing client here.
+  We explicitly read it from window here.
 */
 
-const sb =
-  typeof supabaseClient !== 'undefined'
-    ? supabaseClient
-    : null;
-
+const sb = window.supabaseClient || null;
 const configured = !!sb;
 
 
