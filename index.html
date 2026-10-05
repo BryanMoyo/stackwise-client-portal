@@ -655,7 +655,12 @@ h1,h2,h3,p{
   box-shadow:var(--shadow)
 }
 
-/* Invoice */
+/* ---------- Client invoices ---------- */
+
+.invoice-list{
+  display:grid;
+  gap:14px
+}
 
 .invoice{
   padding:clamp(24px,4vw,40px);
@@ -793,7 +798,7 @@ h1,h2,h3,p{
   }
 }
 
-/* This week */
+/* ---------- This week ---------- */
 
 .tasks{
   list-style:none;
@@ -845,7 +850,7 @@ h1,h2,h3,p{
   border-bottom:1px solid var(--border)
 }
 
-/* Payments */
+/* ---------- Payments ---------- */
 
 .list{
   border-top:1px solid var(--border)
@@ -909,59 +914,7 @@ h1,h2,h3,p{
   }
 }
 
-/* Connections */
-
-.conn{
-  display:flex;
-  align-items:center;
-  gap:16px;
-  padding:18px 4px;
-  border-bottom:1px solid var(--border);
-  transition:background .18s,padding .18s;
-  border-radius:0;
-  min-height:72px
-}
-
-.conn:hover{
-  background:var(--surface-2)
-}
-
-.conn .ic{
-  width:40px;
-  height:40px;
-  border-radius:12px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  display:grid;
-  place-items:center;
-  font-weight:600;
-  flex:none;
-  font-size:17px
-}
-
-.conn .t{
-  flex:1;
-  min-width:0
-}
-
-.conn .t b{
-  display:block;
-  font-weight:600
-}
-
-.conn .t small{
-  color:var(--muted);
-  font-size:14px
-}
-
-.conn .go{
-  color:var(--blue);
-  font-weight:600;
-  font-size:15px;
-  white-space:nowrap
-}
-
-/* Files */
+/* ---------- Files ---------- */
 
 .files{
   padding:clamp(28px,5vw,48px);
@@ -1187,6 +1140,92 @@ h1,h2,h3,p{
   margin-bottom:24px
 }
 
+.invoice-admin-list{
+  margin-top:36px
+}
+
+.invoice-admin-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  gap:20px;
+  align-items:center;
+  padding:18px 0;
+  border-top:1px solid var(--border)
+}
+
+.invoice-admin-main b{
+  display:block;
+  font-weight:600
+}
+
+.invoice-admin-main small{
+  display:block;
+  color:var(--muted);
+  font-size:13.5px;
+  margin-top:3px
+}
+
+.invoice-admin-amount{
+  font-weight:600;
+  white-space:nowrap
+}
+
+.invoice-admin-actions{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  justify-content:flex-end
+}
+
+.invoice-editor{
+  margin-top:8px;
+  padding:28px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:var(--surface)
+}
+
+.invoice-editor-title{
+  margin-bottom:22px
+}
+
+.invoice-editor-title h3{
+  font-size:19px;
+  letter-spacing:-.02em
+}
+
+.invoice-editor-title p{
+  color:var(--muted);
+  font-size:14px;
+  margin-top:4px
+}
+
+.invoice-admin-status{
+  justify-self:start
+}
+
+@media (max-width:760px){
+  .invoice-admin-row{
+    grid-template-columns:1fr auto;
+    gap:8px 14px
+  }
+
+  .invoice-admin-amount{
+    grid-column:2;
+    grid-row:1
+  }
+
+  .invoice-admin-status{
+    grid-column:1;
+    grid-row:2
+  }
+
+  .invoice-admin-actions{
+    grid-column:2;
+    grid-row:2
+  }
+}
+
 @media (max-width:640px){
   .form{
     grid-template-columns:1fr
@@ -1200,6 +1239,14 @@ h1,h2,h3,p{
     align-items:flex-start;
     flex-direction:column;
     gap:8px
+  }
+
+  .invoice-editor{
+    padding:20px
+  }
+
+  .invoice-admin-actions{
+    gap:10px
   }
 }
 
@@ -1235,32 +1282,15 @@ h1,h2,h3,p{
 
 <div id="toast" role="status"></div>
 
-<!-- =====================================================
-     SUPABASE
-     The Supabase library MUST load before config.js.
-     config.js creates window.supabaseClient.
-     ===================================================== -->
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-
 <script src="config.js"></script>
 
 <script>
+
 /* =========================================================
    Staywise & Co. Client Portal
-   Supabase-connected version
+   Multiple-invoice version
    ========================================================= */
-
-/*
-  config.js creates:
-
-  window.supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
-
-  We explicitly read it from window here.
-*/
 
 const sb = window.supabaseClient || null;
 const configured = !!sb;
@@ -1288,8 +1318,15 @@ const iso = d =>
 
 const parse = s => {
   if(!s) return new Date();
-  const [y,m,d] = String(s).split('-').map(Number);
-  return new Date(y,(m||1)-1,d||1);
+
+  const [y,m,d] =
+    String(s).split('-').map(Number);
+
+  return new Date(
+    y,
+    (m||1)-1,
+    d||1
+  );
 };
 
 const addDays = (d,n) => {
@@ -1300,7 +1337,8 @@ const addDays = (d,n) => {
 
 const today = () => iso(new Date());
 
-const offs = n => iso(addDays(new Date(),n));
+const offs = n =>
+  iso(addDays(new Date(),n));
 
 const weekStart = s =>
   iso(
@@ -1315,14 +1353,25 @@ const fmtDate = (s,withYear=true) =>
     ? parse(s).toLocaleDateString(
         'en-US',
         withYear
-          ? {month:'long',day:'numeric',year:'numeric'}
-          : {month:'long',day:'numeric'}
+          ? {
+              month:'long',
+              day:'numeric',
+              year:'numeric'
+            }
+          : {
+              month:'long',
+              day:'numeric'
+            }
       )
     : '—';
 
 const weekRange = () => {
-  const a = parse(weekStart(today()));
-  const b = addDays(a,6);
+
+  const a =
+    parse(weekStart(today()));
+
+  const b =
+    addDays(a,6);
 
   return a.getFullYear()===b.getFullYear()
     ? `${fmtDate(iso(a),false)} – ${fmtDate(iso(b),false)}, ${b.getFullYear()}`
@@ -1330,18 +1379,27 @@ const weekRange = () => {
 };
 
 const money = (n,cur='USD') => {
-  try {
-    return new Intl.NumberFormat('en-US',{
-      style:'currency',
-      currency:(cur||'USD').toUpperCase()
-    }).format(Number(n)||0);
-  } catch(e) {
+
+  try{
+
+    return new Intl.NumberFormat(
+      'en-US',
+      {
+        style:'currency',
+        currency:(cur||'USD').toUpperCase()
+      }
+    ).format(Number(n)||0);
+
+  }catch(e){
+
     return `${Number(n||0).toFixed(2)} ${cur}`;
   }
 };
 
 const safeUrl = u =>
-  /^https?:\/\//i.test(u||'') ? u : '';
+  /^https?:\/\//i.test(u||'')
+    ? u
+    : '';
 
 const initials = n =>
   (n||'?')
@@ -1355,18 +1413,22 @@ const initials = n =>
 let toastT;
 
 const toast = m => {
+
   const t = $('#toast');
+
   if(!t) return;
 
   t.textContent = m;
+
   t.classList.add('show');
 
   clearTimeout(toastT);
 
-  toastT = setTimeout(
-    ()=>t.classList.remove('show'),
-    2600
-  );
+  toastT =
+    setTimeout(
+      ()=>t.classList.remove('show'),
+      2600
+    );
 };
 
 
@@ -1384,6 +1446,7 @@ const FACE = `
 </svg>`;
 
 const I = {
+
   check:`
     <svg viewBox="0 0 24 24"
          fill="none"
@@ -1418,70 +1481,114 @@ const ui = {
   tab:'profile',
   edit:null,
   adminClient:null,
-  preview:null
+  preview:null,
+  invoiceEdit:null
 };
 
 const app = $('#app');
 
 
-/* ---------- data ---------- */
+/* =========================================================
+   DATA MAPPING
+   ========================================================= */
 
-const mapClient = r => ({
-  id:r.id,
-  user_id:r.user_id,
-  name:r.name,
-  company:r.company || '',
-  email:r.email || '',
-  avatar:r.avatar || '',
-  drive:r.drive || '',
+const normalizeRows = value => {
 
-  invoice:
-    (r.invoices || [])
-      .filter(i => i.status !== 'Paid')
-      .map(i => ({
-        id:i.id,
-        number:i.number,
-        description:i.description,
-        amount:Number(i.amount),
-        currency:i.currency,
-        issued:i.issued_on,
-        due:i.due_on,
-        status:i.status,
-        url:i.url || ''
-      }))[0] || null,
+  if(Array.isArray(value)){
+    return value;
+  }
 
-  payments:
-    (r.payments || [])
-      .map(p => ({
-        id:p.id,
-        description:p.description,
-        amount:Number(p.amount),
-        currency:p.currency,
-        paid:p.paid_on,
-        method:p.method || '',
-        reference:p.reference || '',
-        status:p.status
-      })),
+  if(value){
+    return [value];
+  }
 
-  tasks:
-    (r.tasks || [])
-      .map(t => ({
-        id:t.id,
-        text:t.text,
-        date:t.done_on
-      }))
-});
+  return [];
+};
+
+
+const mapClient = r => {
+
+  const invoiceRows =
+    normalizeRows(r.invoices);
+
+  const paymentRows =
+    normalizeRows(r.payments);
+
+  const taskRows =
+    normalizeRows(r.tasks);
+
+  return {
+
+    id:r.id,
+
+    user_id:r.user_id,
+
+    name:r.name,
+
+    company:r.company || '',
+
+    email:r.email || '',
+
+    avatar:r.avatar || '',
+
+    drive:r.drive || '',
+
+    invoices:
+      invoiceRows
+        .map(i=>({
+          id:i.id,
+          number:i.number,
+          description:i.description,
+          amount:Number(i.amount),
+          currency:i.currency,
+          issued:i.issued_on,
+          due:i.due_on,
+          status:i.status,
+          url:i.url || ''
+        }))
+        .sort(
+          (a,b)=>
+            new Date(b.issued||0) -
+            new Date(a.issued||0)
+        ),
+
+    payments:
+      paymentRows
+        .map(p=>({
+          id:p.id,
+          description:p.description,
+          amount:Number(p.amount),
+          currency:p.currency,
+          paid:p.paid_on,
+          method:p.method || '',
+          reference:p.reference || '',
+          status:p.status
+        })),
+
+    tasks:
+      taskRows
+        .map(t=>({
+          id:t.id,
+          text:t.text,
+          date:t.done_on
+        }))
+  };
+};
 
 
 async function refresh(){
 
   if(!sb){
+
     throw new Error(
       'Supabase is not configured. Check config.js.'
     );
   }
 
-  const {data,error} = await sb
+  const {
+    data,
+    error
+  } = await sb
     .from('clients')
     .select(`
       id,
@@ -1524,7 +1631,8 @@ async function refresh(){
   if(error) throw error;
 
   db = {
-    clients:(data || []).map(mapClient)
+    clients:
+      (data||[]).map(mapClient)
   };
 }
 
@@ -1533,7 +1641,9 @@ const client = id =>
   db.clients.find(c=>c.id===id);
 
 
-/* ---------- bootstrap ---------- */
+/* =========================================================
+   BOOTSTRAP
+   ========================================================= */
 
 async function bootstrap(){
 
@@ -1541,7 +1651,8 @@ async function bootstrap(){
 
     app.innerHTML = `
       <div class="loading">
-        Supabase is not configured. Please check config.js.
+        Supabase is not configured.
+        Please check config.js.
       </div>
     `;
 
@@ -1549,7 +1660,9 @@ async function bootstrap(){
   }
 
   app.innerHTML = `
-    <div class="loading">Loading…</div>
+    <div class="loading">
+      Loading…
+    </div>
   `;
 
   try{
@@ -1564,13 +1677,17 @@ async function bootstrap(){
     if(!sessionData.session){
 
       session = null;
+
       render();
+
       return;
     }
 
-    const user = sessionData.session.user;
+    const user =
+      sessionData.session.user;
 
-    /* Check whether the logged-in user is an admin */
+
+    /* ---------- admin ---------- */
 
     const {
       data:adminData,
@@ -1596,10 +1713,12 @@ async function bootstrap(){
       await refresh();
 
       render();
+
       return;
     }
 
-    /* Otherwise load the client account */
+
+    /* ---------- client ---------- */
 
     const {
       data:clientData,
@@ -1652,6 +1771,7 @@ async function bootstrap(){
       await sb.auth.signOut();
 
       session = null;
+
       render();
 
       toast(
@@ -1662,7 +1782,9 @@ async function bootstrap(){
     }
 
     db = {
-      clients:[mapClient(clientData)]
+      clients:[
+        mapClient(clientData)
+      ]
     };
 
     session = {
@@ -1682,8 +1804,12 @@ async function bootstrap(){
 
     app.innerHTML = `
       <main class="login">
+
         <section class="login-left">
-          <div class="mini-brand">Staywise &amp; Co.</div>
+
+          <div class="mini-brand">
+            Staywise &amp; Co.
+          </div>
 
           <h1>
             Something went<br>
@@ -1702,38 +1828,50 @@ async function bootstrap(){
           </button>
 
           <p class="err" style="margin-top:20px">
-            ${esc(error.message || 'Unknown error')}
+            ${esc(error.message||'Unknown error')}
           </p>
+
         </section>
+
       </main>
     `;
   }
 }
 
 
-/* ---------- views ---------- */
+/* =========================================================
+   VIEWS
+   ========================================================= */
 
 function render(){
 
   if(!session){
+
     return renderLogin();
   }
 
-  if(session.role === 'client'){
+  if(session.role==='client'){
 
-    const c = client(session.clientId);
+    const c =
+      client(session.clientId);
 
     if(!c){
-      session = null;
+
+      session=null;
+
       return renderLogin();
     }
 
     return renderPortal(c,false);
   }
 
-  if(session.role === 'admin'){
+  if(session.role==='admin'){
 
-    if(ui.preview && client(ui.preview)){
+    if(
+      ui.preview &&
+      client(ui.preview)
+    ){
+
       return renderPortal(
         client(ui.preview),
         true
@@ -1745,7 +1883,9 @@ function render(){
 }
 
 
-/* ---------- login ---------- */
+/* =========================================================
+   LOGIN
+   ========================================================= */
 
 function renderLogin(){
 
@@ -1767,27 +1907,34 @@ function renderLogin(){
         <span>sign in</span>
       </div>
 
-      <form id="loginForm"
-            autocomplete="on"
-            novalidate>
+      <form
+        id="loginForm"
+        autocomplete="on"
+        novalidate>
 
         <label class="float">
+
           <span>Email</span>
+
           <input
             id="em"
             type="email"
             name="email"
             autocomplete="username"
             inputmode="email">
+
         </label>
 
         <label class="float">
+
           <span>Password</span>
+
           <input
             id="pw"
             type="password"
             name="password"
             autocomplete="current-password">
+
         </label>
 
         <div
@@ -1817,9 +1964,11 @@ function renderLogin(){
       <p
         class="ios-help hidden"
         id="iosHelp">
+
         To install on iPhone or iPad:
         tap the Share button in Safari,
         then choose “Add to Home Screen”.
+
       </p>
 
       <a
@@ -1862,9 +2011,12 @@ function renderLogin(){
       </div>
 
       <div class="help-card">
+
         <b>Need access?</b>
+
         Ask your Staywise &amp; Co. contact
         for your sign-in details.
+
       </div>
 
     </section>
@@ -1882,7 +2034,8 @@ function renderLogin(){
       em.value.trim() &&
       pw.value;
 
-    go.disabled = !ready;
+    go.disabled=!ready;
+
     go.classList.toggle(
       'ready',
       !!ready
@@ -1891,12 +2044,19 @@ function renderLogin(){
 
   syncInstall();
 
-  em.addEventListener('input',chk);
-  pw.addEventListener('input',chk);
+  em.addEventListener(
+    'input',
+    chk
+  );
+
+  pw.addEventListener(
+    'input',
+    chk
+  );
 
   $('#loginForm').addEventListener(
     'submit',
-    async e => {
+    async e=>{
 
       e.preventDefault();
 
@@ -1906,9 +2066,10 @@ function renderLogin(){
       const password =
         pw.value;
 
-      const err = $('#err');
+      const err =
+        $('#err');
 
-      err.textContent = '';
+      err.textContent='';
 
       if(!sb){
 
@@ -1918,8 +2079,10 @@ function renderLogin(){
         return;
       }
 
-      go.disabled = true;
-      go.textContent = 'Signing in…';
+      go.disabled=true;
+
+      go.textContent=
+        'Signing in…';
 
       try{
 
@@ -1934,6 +2097,7 @@ function renderLogin(){
         if(error) throw error;
 
         if(!data.session){
+
           throw new Error(
             'No login session was created.'
           );
@@ -1949,8 +2113,10 @@ function renderLogin(){
           error.message ||
           'That email and password don’t match.';
 
-        go.disabled = false;
-        go.textContent = 'Continue';
+        go.disabled=false;
+
+        go.textContent=
+          'Continue';
 
         chk();
       }
@@ -1959,7 +2125,9 @@ function renderLogin(){
 }
 
 
-/* ---------- auth ---------- */
+/* =========================================================
+   AUTH
+   ========================================================= */
 
 async function signOut(){
 
@@ -1974,15 +2142,21 @@ async function signOut(){
     console.error(error);
   }
 
-  session = null;
-  ui.preview = null;
-  ui.adminClient = null;
+  session=null;
+
+  ui.preview=null;
+
+  ui.adminClient=null;
+
+  ui.invoiceEdit=null;
 
   render();
 }
 
 
-/* ---------- header ---------- */
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 function header(name,sub,avatarHtml){
 
@@ -1992,27 +2166,39 @@ function header(name,sub,avatarHtml){
     <div class="header-in">
 
       <div class="brand">
+
         Staywise &amp; Co.
-        <small>${esc(sub)}</small>
+
+        <small>
+          ${esc(sub)}
+        </small>
+
       </div>
 
       <div class="user">
 
         <div class="user-name">
-          <b>${esc(name)}</b>
+
+          <b>
+            ${esc(name)}
+          </b>
+
           <span>
-            ${esc(
+            ${
               sub==='Client Portal'
                 ? ''
                 : sub
-            )}
+            }
           </span>
+
         </div>
 
         <div
           class="avatar"
           aria-hidden="true">
+
           ${avatarHtml}
+
         </div>
 
         <button
@@ -2048,17 +2234,26 @@ const avatarHtml = c => {
 };
 
 
-/* ---------- client portal ---------- */
+/* =========================================================
+   CLIENT PORTAL
+   ========================================================= */
 
 function renderPortal(c,preview){
 
-  const inv = c.invoice;
+  const invoices =
+    (c.invoices||[])
+      .filter(
+        i=>i.status!=='Paid'
+      );
 
-  const wk = weekStart(today());
+  const wk =
+    weekStart(today());
 
   const tasks =
     (c.tasks||[])
-      .filter(t=>weekStart(t.date)===wk)
+      .filter(
+        t=>weekStart(t.date)===wk
+      )
       .sort(
         (a,b)=>
           a.date<b.date
@@ -2073,96 +2268,139 @@ function renderPortal(c,preview){
       .sort(
         (a,b)=>
           (b.paid||'')
-            .localeCompare(a.paid||'')
+            .localeCompare(
+              a.paid||''
+            )
       );
 
   const first =
     c.name.split(' ')[0];
 
+
+  /* ---------- invoices ---------- */
+
   let invHtml;
 
-  if(inv && inv.status!=='Paid'){
-
-    const overdue =
-      inv.due &&
-      inv.due<today();
-
-    const st =
-      overdue
-        ? 'Overdue'
-        : 'Pending';
-
-    const link =
-      safeUrl(inv.url);
+  if(invoices.length){
 
     invHtml = `
-      <div class="panel invoice">
+      <div class="invoice-list">
 
-        <div>
+        ${
+          invoices.map(inv=>{
 
-          <div class="eyebrow">
-            Active Invoice
-          </div>
+            const overdue =
+              inv.due &&
+              inv.due<today();
 
-          <div class="title">
-            ${esc(inv.description)}
-          </div>
+            const st =
+              overdue
+                ? 'Overdue'
+                : 'Pending';
 
-          <div class="num">
-            Invoice #${esc(inv.number)}
-          </div>
+            const link =
+              safeUrl(inv.url);
 
-          <div class="amount">
-            ${money(inv.amount,inv.currency)}
-          </div>
+            return `
 
-          <div class="meta">
+              <div class="panel invoice">
 
-            <div>
-              <span>Status</span>
-              <b class="status ${st.toLowerCase()}">
-                ${st}
-              </b>
-            </div>
+                <div>
 
-            <div>
-              <span>Due</span>
-              <b>${fmtDate(inv.due)}</b>
-            </div>
+                  <div class="eyebrow">
+                    Invoice
+                  </div>
 
-            <div>
-              <span>Issued</span>
-              <b>${fmtDate(inv.issued)}</b>
-            </div>
+                  <div class="title">
+                    ${esc(inv.description)}
+                  </div>
 
-          </div>
+                  <div class="num">
+                    Invoice #${esc(inv.number)}
+                  </div>
 
-        </div>
+                  <div class="amount">
+                    ${money(
+                      inv.amount,
+                      inv.currency
+                    )}
+                  </div>
 
-        <div class="invoice-actions">
+                  <div class="meta">
 
-          ${
-            link
-              ? `
-                <a
-                  class="btn btn-primary"
-                  href="${esc(link)}"
-                  target="_blank"
-                  rel="noopener">
-                  View Invoice
-                </a>
-              `
-              : `
-                <button
-                  class="btn btn-primary"
-                  data-action="toast"
-                  data-msg="Your invoice PDF isn’t available yet.">
-                  View Invoice
-                </button>
-              `
-          }
+                    <div>
 
-        </div>
+                      <span>
+                        Status
+                      </span>
+
+                      <b class="status ${
+                        st.toLowerCase()
+                      }">
+                        ${st}
+                      </b>
+
+                    </div>
+
+                    <div>
+
+                      <span>
+                        Due
+                      </span>
+
+                      <b>
+                        ${fmtDate(inv.due)}
+                      </b>
+
+                    </div>
+
+                    <div>
+
+                      <span>
+                        Issued
+                      </span>
+
+                      <b>
+                        ${fmtDate(inv.issued)}
+                      </b>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                <div class="invoice-actions">
+
+                  ${
+                    link
+                      ? `
+                        <a
+                          class="btn btn-primary"
+                          href="${esc(link)}"
+                          target="_blank"
+                          rel="noopener">
+                          View Invoice
+                        </a>
+                      `
+                      : `
+                        <button
+                          class="btn btn-primary"
+                          data-action="toast"
+                          data-msg="Your invoice PDF isn’t available yet.">
+                          View Invoice
+                        </button>
+                      `
+                  }
+
+                </div>
+
+              </div>
+
+            `;
+
+          }).join('')
+        }
 
       </div>
     `;
@@ -2182,8 +2420,10 @@ function renderPortal(c,preview){
     `;
   }
 
+
   const driveUrl =
     safeUrl(c.drive);
+
 
   app.innerHTML = `
 
@@ -2191,7 +2431,9 @@ function renderPortal(c,preview){
       preview
         ? `
           <div class="banner">
+
             <div>
+
               <span>
                 Previewing the portal as
                 ${esc(c.name)}
@@ -2202,7 +2444,9 @@ function renderPortal(c,preview){
                 data-action="exit-preview">
                 Back to admin
               </button>
+
             </div>
+
           </div>
         `
         : ''
@@ -2223,15 +2467,47 @@ function renderPortal(c,preview){
         </h1>
 
         <p>
+
           ${esc(c.company||'')}
+
           ${c.company?' · ':''}
+
           Here’s where everything stands.
+
         </p>
 
       </div>
 
 
       <section class="section">
+
+        <div class="section-head">
+
+          <div>
+
+            <h2>
+              Invoices
+            </h2>
+
+            ${
+              invoices.length
+                ? `
+                  <p class="sub">
+                    ${invoices.length}
+                    outstanding
+                    ${
+                      invoices.length===1
+                        ? 'invoice'
+                        : 'invoices'
+                    }
+                  </p>
+                `
+                : ''
+            }
+
+          </div>
+
+        </div>
 
         ${invHtml}
 
@@ -2323,9 +2599,11 @@ function renderPortal(c,preview){
                       </b>
 
                       ${
-                        p.method || p.reference
+                        p.method ||
+                        p.reference
                           ? `
                             <small>
+
                               ${esc(
                                 [
                                   p.method,
@@ -2334,6 +2612,7 @@ function renderPortal(c,preview){
                                 .filter(Boolean)
                                 .join(' · ')
                               )}
+
                             </small>
                           `
                           : ''
@@ -2342,19 +2621,24 @@ function renderPortal(c,preview){
                     </div>
 
                     <div class="amt">
+
                       ${money(
                         p.amount,
                         p.currency
                       )}
+
                     </div>
 
                     <div class="dt">
+
                       ${
                         p.status==='Paid'
                           ? 'Paid · '
                           : ''
                       }
+
                       ${fmtDate(p.paid)}
+
                     </div>
 
                     <div class="st">
@@ -2406,9 +2690,11 @@ function renderPortal(c,preview){
               </h2>
 
               <p>
+
                 All of your Staywise &amp; Co.
                 files are stored securely
                 in your shared Google Drive.
+
               </p>
 
             </div>
@@ -2445,12 +2731,16 @@ function renderPortal(c,preview){
 }
 
 
-/* ---------- admin ---------- */
+/* =========================================================
+   COLLECTION CONFIG
+   ========================================================= */
 
 const COLL = {
 
   payments:{
+
     title:'Payment history',
+
     empty:'No payments yet.',
 
     fields:[
@@ -2465,22 +2755,44 @@ const COLL = {
 
     row:p=>[
       `${p.description} · ${money(p.amount,p.currency)}`,
-      `${p.status} · ${fmtDate(p.paid)}${p.method?' · '+p.method:''}${p.reference?' · '+p.reference:''}`
+
+      `${p.status} · ${fmtDate(p.paid)}${
+        p.method
+          ? ' · '+p.method
+          : ''
+      }${
+        p.reference
+          ? ' · '+p.reference
+          : ''
+      }`
     ],
 
     blank:c=>({
+
       description:'',
+
       amount:'',
-      currency:(c.invoice&&c.invoice.currency)||'USD',
-      paid:today(),
-      method:'Bank transfer',
+
+      currency:
+        'USD',
+
+      paid:
+        today(),
+
+      method:
+        'Bank transfer',
+
       reference:'',
-      status:'Paid'
+
+      status:
+        'Paid'
     })
   },
 
   tasks:{
+
     title:'Weekly tasks',
+
     empty:'No tasks yet.',
 
     fields:[
@@ -2490,16 +2802,31 @@ const COLL = {
 
     row:t=>[
       t.text,
-      `${fmtDate(t.date)} · week of ${fmtDate(weekStart(t.date),false)}${weekStart(t.date)===weekStart(today())?' (current week)':''}`
+
+      `${fmtDate(t.date)} · week of ${fmtDate(
+        weekStart(t.date),
+        false
+      )}${
+        weekStart(t.date)===weekStart(today())
+          ? ' (current week)'
+          : ''
+      }`
     ],
 
     blank:()=>({
+
       text:'',
-      date:today()
+
+      date:
+        today()
     })
   }
 };
 
+
+/* =========================================================
+   FIELD
+   ========================================================= */
 
 const field = (
   name,
@@ -2525,10 +2852,15 @@ const field = (
 
           ${
             options.map(v=>`
+
               <option
+                value="${esc(v)}"
                 ${v===val?'selected':''}>
-                ${v}
+
+                ${esc(v)}
+
               </option>
+
             `).join('')
           }
 
@@ -2569,7 +2901,9 @@ const field = (
 };
 
 
-/* ---------- admin render ---------- */
+/* =========================================================
+   ADMIN RENDER
+   ========================================================= */
 
 function renderAdmin(){
 
@@ -2587,12 +2921,13 @@ function renderAdmin(){
 
   const tabs = [
     ['profile','Profile'],
-    ['invoice','Active invoice'],
+    ['invoice','Invoices'],
     ['payments','Payments'],
     ['tasks','Weekly tasks']
   ];
 
   let body='';
+
 
   if(!c){
 
@@ -2605,19 +2940,23 @@ function renderAdmin(){
 
   }else if(ui.tab==='profile'){
 
-    body = adminProfile(c);
+    body =
+      adminProfile(c);
 
   }else if(ui.tab==='invoice'){
 
-    body = adminInvoice(c);
+    body =
+      adminInvoice(c);
 
   }else{
 
-    body = adminColl(
-      c,
-      ui.tab
-    );
+    body =
+      adminColl(
+        c,
+        ui.tab
+      );
   }
+
 
   app.innerHTML = `
 
@@ -2654,11 +2993,13 @@ function renderAdmin(){
 
                 ${
                   db.clients.map(x=>`
+
                     <option
                       value="${x.id}"
                       ${x.id===ui.adminClient?'selected':''}>
 
                       ${esc(x.name)}
+
                       ${
                         x.company
                           ? ' — '+esc(x.company)
@@ -2666,6 +3007,7 @@ function renderAdmin(){
                       }
 
                     </option>
+
                   `).join('')
                 }
 
@@ -2701,12 +3043,16 @@ function renderAdmin(){
 
               ${
                 tabs.map(([k,l])=>`
+
                   <button
                     class="tab ${ui.tab===k?'on':''}"
                     data-action="tab"
                     data-tab="${k}">
+
                     ${l}
+
                   </button>
+
                 `).join('')
               }
 
@@ -2720,27 +3066,34 @@ function renderAdmin(){
     </main>
   `;
 
-  const sel = $('#clientSel');
+
+  const sel =
+    $('#clientSel');
 
   if(sel){
 
     sel.addEventListener(
       'change',
       e=>{
+
         ui.adminClient =
           e.target.value;
 
-        ui.edit = null;
+        ui.edit=null;
+
+        ui.invoiceEdit=null;
 
         render();
       }
     );
   }
 
+
   const file =
     $('#avFile');
 
   if(file){
+
     file.addEventListener(
       'change',
       onAvatar
@@ -2749,7 +3102,9 @@ function renderAdmin(){
 }
 
 
-/* ---------- admin profile ---------- */
+/* =========================================================
+   ADMIN PROFILE
+   ========================================================= */
 
 function adminProfile(c){
 
@@ -2764,7 +3119,9 @@ function adminProfile(c){
         <div
           class="avatar"
           id="avPrev">
+
           ${avatarHtml(c)}
+
         </div>
 
         <div>
@@ -2773,7 +3130,9 @@ function adminProfile(c){
             for="avFile"
             class="btn btn-sm"
             style="cursor:pointer">
+
             Upload photo
+
           </label>
 
           <input
@@ -2792,12 +3151,14 @@ function adminProfile(c){
 
       </div>
 
+
       ${field(
         'name',
         'Client name',
         'text',
         c.name
       )}
+
 
       ${field(
         'company',
@@ -2806,12 +3167,14 @@ function adminProfile(c){
         c.company
       )}
 
+
       ${field(
         'email',
         'Login email',
         'email',
         c.email
       )}
+
 
       ${field(
         'drive',
@@ -2821,9 +3184,12 @@ function adminProfile(c){
         'full'
       )}
 
+
       <div class="f full">
 
-        <p class="note" style="margin:0">
+        <p
+          class="note"
+          style="margin:0">
 
           The login password is managed by
           Supabase Authentication and is not
@@ -2837,12 +3203,15 @@ function adminProfile(c){
 
       </div>
 
+
       <div class="f-actions">
 
         <button
           class="btn btn-primary"
           type="submit">
+
           Save client
+
         </button>
 
       </div>
@@ -2852,13 +3221,33 @@ function adminProfile(c){
 }
 
 
-/* ---------- invoice ---------- */
+/* =========================================================
+   ADMIN INVOICES
+   ========================================================= */
 
 function adminInvoice(c){
 
+  const invoices =
+    [...(c.invoices||[])]
+      .sort(
+        (a,b)=>
+          new Date(b.issued||0) -
+          new Date(a.issued||0)
+      );
+
+
+  const editing =
+    ui.invoiceEdit
+      ? invoices.find(
+          i=>i.id===ui.invoiceEdit
+        )
+      : null;
+
+
   const i =
-    c.invoice ||
+    editing ||
     {
+      id:'',
       number:'',
       description:'',
       amount:'',
@@ -2869,134 +3258,302 @@ function adminInvoice(c){
       url:''
     };
 
+
   return `
 
-    <p class="note">
+    <div class="section-head">
 
-      ${
-        c.invoice
-          ? 'This is the invoice the client sees at the top of their dashboard.'
-          : 'No active invoice. Create one below and the client will see it immediately.'
-      }
+      <div>
 
-    </p>
+        <h2>
+          Invoices
+        </h2>
 
-    <form
-      class="form"
-      data-form="invoice">
-
-      ${field(
-        'number',
-        'Invoice number',
-        'text',
-        i.number
-      )}
-
-      ${field(
-        'description',
-        'Description',
-        'text',
-        i.description
-      )}
-
-      ${field(
-        'amount',
-        'Amount',
-        'number',
-        i.amount
-      )}
-
-      ${field(
-        'currency',
-        'Currency',
-        'text',
-        i.currency
-      )}
-
-      ${field(
-        'issued',
-        'Issue date',
-        'date',
-        i.issued
-      )}
-
-      ${field(
-        'due',
-        'Due date',
-        'date',
-        i.due
-      )}
-
-      ${field(
-        'status',
-        'Status',
-        'select:Pending,Paid',
-        i.status
-      )}
-
-      ${field(
-        'url',
-        'Invoice URL / PDF URL',
-        'url',
-        i.url
-      )}
-
-      <div class="f-actions">
-
-        <button
-          class="btn btn-primary"
-          type="submit">
-          Save invoice
-        </button>
-
-        ${
-          c.invoice
-            ? `
-              <button
-                class="btn"
-                type="button"
-                data-action="mark-paid">
-                Mark as paid
-              </button>
-
-              <button
-                class="btn"
-                type="button"
-                data-action="remove-invoice">
-                Remove invoice
-              </button>
-            `
-            : ''
-        }
+        <p class="sub">
+          Create and manage multiple invoices
+          for this client.
+        </p>
 
       </div>
 
-    </form>
+      <button
+        class="btn btn-primary"
+        type="button"
+        data-action="new-invoice">
+
+        + New invoice
+
+      </button>
+
+    </div>
+
 
     ${
-      c.invoice
+      editing || ui.invoiceEdit==='new'
         ? `
-          <p
-            class="note"
-            style="margin-top:20px">
 
-            “Mark as paid” moves the invoice
-            into Payment History and clears
-            the active invoice.
+          <div class="invoice-editor">
 
+            <div class="invoice-editor-title">
+
+              <h3>
+                ${
+                  editing
+                    ? 'Edit invoice'
+                    : 'New invoice'
+                }
+              </h3>
+
+              <p>
+                ${
+                  editing
+                    ? `Invoice #${esc(editing.number)}`
+                    : 'Create a new invoice for this client.'
+                }
+              </p>
+
+            </div>
+
+
+            <form
+              class="form"
+              data-form="invoice">
+
+              ${field(
+                'number',
+                'Invoice number',
+                'text',
+                i.number
+              )}
+
+              ${field(
+                'description',
+                'Description',
+                'text',
+                i.description
+              )}
+
+              ${field(
+                'amount',
+                'Amount',
+                'number',
+                i.amount
+              )}
+
+              ${field(
+                'currency',
+                'Currency',
+                'text',
+                i.currency
+              )}
+
+              ${field(
+                'issued',
+                'Issue date',
+                'date',
+                i.issued
+              )}
+
+              ${field(
+                'due',
+                'Due date',
+                'date',
+                i.due
+              )}
+
+              ${field(
+                'status',
+                'Status',
+                'select:Pending,Paid',
+                i.status
+              )}
+
+              ${field(
+                'url',
+                'Invoice URL / PDF URL',
+                'url',
+                i.url,
+                'full'
+              )}
+
+              <input
+                type="hidden"
+                name="id"
+                value="${esc(i.id||'')}">
+
+              <div class="f-actions">
+
+                <button
+                  class="btn btn-primary"
+                  type="submit">
+
+                  ${
+                    editing
+                      ? 'Update invoice'
+                      : 'Create invoice'
+                  }
+
+                </button>
+
+                <button
+                  class="btn"
+                  type="button"
+                  data-action="cancel-invoice">
+
+                  Cancel
+
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        `
+        : `
+          <p class="note">
+            Click “New invoice” to add another invoice.
+            Existing invoices remain in place.
           </p>
         `
-        : ''
     }
+
+
+    <div class="invoice-admin-list">
+
+      <h3 class="sub-title">
+        ${
+          invoices.length
+            ? 'All invoices'
+            : 'No invoices yet'
+        }
+      </h3>
+
+
+      ${
+        invoices.length
+          ? invoices.map(inv=>{
+
+              const overdue =
+                inv.status!=='Paid' &&
+                inv.due &&
+                inv.due<today();
+
+              const statusLabel =
+                inv.status==='Paid'
+                  ? 'Paid'
+                  : overdue
+                    ? 'Overdue'
+                    : 'Pending';
+
+              const statusClass =
+                statusLabel.toLowerCase();
+
+              return `
+
+                <div class="invoice-admin-row">
+
+                  <div class="invoice-admin-main">
+
+                    <b>
+                      ${esc(inv.description||'Invoice')}
+                    </b>
+
+                    <small>
+                      #${esc(inv.number)}
+                      · Issued ${fmtDate(inv.issued)}
+                      · Due ${fmtDate(inv.due)}
+                    </small>
+
+                  </div>
+
+
+                  <div class="invoice-admin-amount">
+
+                    ${money(
+                      inv.amount,
+                      inv.currency
+                    )}
+
+                  </div>
+
+
+                  <div
+                    class="invoice-admin-status">
+
+                    <span class="status ${statusClass}">
+
+                      ${statusLabel}
+
+                    </span>
+
+                  </div>
+
+
+                  <div class="invoice-admin-actions">
+
+                    <button
+                      class="link"
+                      data-action="edit-invoice"
+                      data-id="${inv.id}">
+
+                      Edit
+
+                    </button>
+
+                    ${
+                      inv.status!=='Paid'
+                        ? `
+                          <button
+                            class="link"
+                            data-action="mark-paid-invoice"
+                            data-id="${inv.id}">
+
+                            Mark paid
+
+                          </button>
+                        `
+                        : ''
+                    }
+
+                    <button
+                      class="link danger"
+                      data-action="remove-invoice"
+                      data-id="${inv.id}">
+
+                      Remove
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+              `;
+
+            }).join('')
+          : `
+            <p class="nothing">
+              No invoices have been created for this client yet.
+            </p>
+          `
+      }
+
+    </div>
+
   `;
 }
 
 
-/* ---------- collections ---------- */
+/* =========================================================
+   COLLECTIONS
+   ========================================================= */
 
 function adminColl(c,key){
 
-  const cfg = COLL[key];
+  const cfg =
+    COLL[key];
 
   const items =
     c[key] || [];
@@ -3022,6 +3579,7 @@ function adminColl(c,key){
     editing ||
     cfg.blank(c);
 
+
   return `
 
     <form
@@ -3046,7 +3604,9 @@ function adminColl(c,key){
         <button
           class="btn btn-primary"
           type="submit">
+
           ${editing?'Update':'Add'}
+
         </button>
 
         ${
@@ -3056,7 +3616,9 @@ function adminColl(c,key){
                 class="btn"
                 type="button"
                 data-action="cancel-edit">
+
                 Cancel
+
               </button>
             `
             : ''
@@ -3066,9 +3628,11 @@ function adminColl(c,key){
 
     </form>
 
+
     <h3 class="sub-title">
       ${cfg.title}
     </h3>
+
 
     ${
       sorted.length
@@ -3104,7 +3668,9 @@ function adminColl(c,key){
                         data-action="edit"
                         data-key="${key}"
                         data-id="${x.id}">
+
                         Edit
+
                       </button>
 
                       <button
@@ -3112,12 +3678,15 @@ function adminColl(c,key){
                         data-action="del"
                         data-key="${key}"
                         data-id="${x.id}">
+
                         Delete
+
                       </button>
 
                     </div>
 
                   </div>
+
                 `;
               }).join('')
             }
@@ -3130,11 +3699,14 @@ function adminColl(c,key){
           </p>
         `
     }
+
   `;
 }
 
 
-/* ---------- avatar ---------- */
+/* =========================================================
+   AVATAR
+   ========================================================= */
 
 function onAvatar(e){
 
@@ -3153,13 +3725,14 @@ function onAvatar(e){
 
     img.onload = () => {
 
-      const s = 128;
+      const s=128;
 
       const cv =
         document.createElement('canvas');
 
-      cv.width = s;
-      cv.height = s;
+      cv.width=s;
+
+      cv.height=s;
 
       const x =
         cv.getContext('2d');
@@ -3188,37 +3761,52 @@ function onAvatar(e){
           .82
         );
 
-      $('#avVal').value = d;
+      $('#avVal').value=d;
 
       $('#avPrev').innerHTML =
         `<img src="${d}" alt="">`;
     };
 
-    img.src = r.result;
+    img.src=r.result;
   };
 
   r.readAsDataURL(f);
 }
 
 
-/* ---------- database actions ---------- */
+/* =========================================================
+   MARK INVOICE PAID
+   ========================================================= */
 
-async function markPaid(c){
+async function markPaid(c,invoiceId){
+
+  const invoices =
+    c.invoices || [];
 
   const i =
-    c.invoice;
+    invoices.find(
+      x=>x.id===invoiceId
+    );
 
-  if(!i) return;
+  if(!i){
+
+    toast(
+      'Invoice not found'
+    );
+
+    return;
+  }
 
   try{
 
     const {
-      error
+      error:paymentError
     } = await sb
       .from('payments')
       .insert({
         client_id:c.id,
-        description:`${i.description} · #${i.number}`,
+        description:
+          `${i.description} · #${i.number}`,
         amount:Number(i.amount),
         currency:i.currency,
         paid_on:today(),
@@ -3227,7 +3815,9 @@ async function markPaid(c){
         status:'Paid'
       });
 
-    if(error) throw error;
+    if(paymentError)
+      throw paymentError;
+
 
     const {
       error:deleteError
@@ -3236,9 +3826,13 @@ async function markPaid(c){
       .delete()
       .eq('id',i.id);
 
-    if(deleteError) throw deleteError;
+    if(deleteError)
+      throw deleteError;
+
 
     await refresh();
+
+    ui.invoiceEdit=null;
 
     toast(
       'Invoice marked as paid'
@@ -3258,7 +3852,9 @@ async function markPaid(c){
 }
 
 
-/* ---------- add client ---------- */
+/* =========================================================
+   ADD CLIENT
+   ========================================================= */
 
 async function addClient(){
 
@@ -3289,8 +3885,7 @@ async function addClient(){
     ui.adminClient =
       data.id;
 
-    ui.tab =
-      'profile';
+    ui.tab='profile';
 
     render();
 
@@ -3310,7 +3905,9 @@ async function addClient(){
 }
 
 
-/* ---------- save profile ---------- */
+/* =========================================================
+   SAVE PROFILE
+   ========================================================= */
 
 async function saveProfile(c,d){
 
@@ -3351,62 +3948,158 @@ async function saveProfile(c,d){
 }
 
 
-/* ---------- save invoice ---------- */
+/* =========================================================
+   SAVE INVOICE
+   ========================================================= */
 
 async function saveInvoice(c,d){
 
   try{
 
     const payload = {
+
       client_id:c.id,
-      number:d.number,
-      description:d.description,
-      amount:Number(d.amount),
-      currency:(d.currency||'USD').toUpperCase(),
-      issued_on:d.issued || null,
-      due_on:d.due || null,
-      status:d.status || 'Pending',
-      url:d.url || null
+
+      number:
+        d.number.trim(),
+
+      description:
+        d.description.trim(),
+
+      amount:
+        Number(d.amount),
+
+      currency:
+        (d.currency||'USD')
+          .trim()
+          .toUpperCase(),
+
+      issued_on:
+        d.issued || null,
+
+      due_on:
+        d.due || null,
+
+      status:
+        d.status || 'Pending',
+
+      url:
+        d.url
+          ? d.url.trim()
+          : null
     };
 
-    /*
-      If an existing invoice is being marked Paid,
-      first create the payment using the real invoice,
-      then delete that invoice.
-    */
 
-    if(d.status==='Paid'){
+    if(!payload.number){
 
-      const existingInvoice = c.invoice;
+      toast(
+        'Please enter an invoice number'
+      );
 
-      if(existingInvoice){
+      return;
+    }
 
-        await markPaid(c);
+
+    if(!payload.description){
+
+      toast(
+        'Please enter a description'
+      );
+
+      return;
+    }
+
+
+    if(
+      !Number.isFinite(payload.amount)
+    ){
+
+      toast(
+        'Please enter a valid amount'
+      );
+
+      return;
+    }
+
+
+    /* -----------------------------------------
+       EXISTING INVOICE
+       ----------------------------------------- */
+
+    if(d.id){
+
+      /*
+        If the administrator selected Paid,
+        record payment and remove that specific
+        invoice.
+      */
+
+      if(payload.status==='Paid'){
+
+        await markPaid(
+          c,
+          d.id
+        );
 
         return;
       }
 
-      /*
-        If this is a brand-new invoice being saved
-        directly as Paid, insert it first so it gets
-        a real database ID.
-      */
 
       const {
-        data:newInvoice,
-        error:insertError
+        error
       } = await sb
         .from('invoices')
-        .upsert(
-          payload,
-          {
-            onConflict:'client_id'
-          }
-        )
-        .select()
-        .single();
+        .update(payload)
+        .eq('id',d.id);
 
-      if(insertError) throw insertError;
+      if(error) throw error;
+
+      await refresh();
+
+      ui.invoiceEdit=null;
+
+      toast(
+        'Invoice updated'
+      );
+
+      render();
+
+      return;
+    }
+
+
+    /* -----------------------------------------
+       NEW INVOICE
+       ----------------------------------------- */
+
+    /*
+      IMPORTANT:
+      This is INSERT, not UPSERT.
+
+      This is what allows multiple invoices
+      for the same client.
+    */
+
+    const {
+      data:newInvoice,
+      error:insertError
+    } = await sb
+      .from('invoices')
+      .insert(payload)
+      .select()
+      .single();
+
+    if(insertError)
+      throw insertError;
+
+
+    /*
+      If a brand-new invoice is immediately
+      marked Paid, create its payment and
+      then remove the invoice.
+    */
+
+    if(payload.status==='Paid'){
 
       const {
         error:paymentError
@@ -3414,16 +4107,19 @@ async function saveInvoice(c,d){
         .from('payments')
         .insert({
           client_id:c.id,
-          description:`${d.description} · #${d.number}`,
-          amount:Number(d.amount),
-          currency:(d.currency||'USD').toUpperCase(),
+          description:
+            `${payload.description} · #${payload.number}`,
+          amount:Number(payload.amount),
+          currency:payload.currency,
           paid_on:today(),
           method:'Bank transfer',
-          reference:d.number,
+          reference:payload.number,
           status:'Paid'
         });
 
-      if(paymentError) throw paymentError;
+      if(paymentError)
+        throw paymentError;
+
 
       const {
         error:deleteError
@@ -3432,9 +4128,12 @@ async function saveInvoice(c,d){
         .delete()
         .eq('id',newInvoice.id);
 
-      if(deleteError) throw deleteError;
+      if(deleteError)
+        throw deleteError;
 
       await refresh();
+
+      ui.invoiceEdit=null;
 
       toast(
         'Invoice recorded as paid'
@@ -3445,23 +4144,13 @@ async function saveInvoice(c,d){
       return;
     }
 
-    const {
-      error
-    } = await sb
-      .from('invoices')
-      .upsert(
-        payload,
-        {
-          onConflict:'client_id'
-        }
-      );
-
-    if(error) throw error;
 
     await refresh();
 
+    ui.invoiceEdit=null;
+
     toast(
-      'Invoice saved'
+      'Invoice created'
     );
 
     render();
@@ -3478,7 +4167,9 @@ async function saveInvoice(c,d){
 }
 
 
-/* ---------- collection save ---------- */
+/* =========================================================
+   SAVE COLLECTION
+   ========================================================= */
 
 async function saveCollection(
   c,
@@ -3491,15 +4182,32 @@ async function saveCollection(
     if(key==='payments'){
 
       const row = {
+
         client_id:c.id,
-        description:d.description,
-        amount:Number(d.amount),
-        currency:(d.currency||'USD').toUpperCase(),
-        paid_on:d.paid || null,
-        method:d.method || '',
-        reference:d.reference || '',
-        status:d.status || 'Paid'
+
+        description:
+          d.description,
+
+        amount:
+          Number(d.amount),
+
+        currency:
+          (d.currency||'USD')
+            .toUpperCase(),
+
+        paid_on:
+          d.paid || null,
+
+        method:
+          d.method || '',
+
+        reference:
+          d.reference || '',
+
+        status:
+          d.status || 'Paid'
       };
+
 
       if(
         ui.edit &&
@@ -3515,7 +4223,9 @@ async function saveCollection(
 
         if(error) throw error;
 
-        toast('Payment updated');
+        toast(
+          'Payment updated'
+        );
 
       }else{
 
@@ -3527,22 +4237,31 @@ async function saveCollection(
 
         if(error) throw error;
 
-        toast('Payment added');
+        toast(
+          'Payment added'
+        );
       }
-
     }
 
 
     if(key==='tasks'){
 
       const row = {
+
         client_id:c.id,
-        text:d.text,
-        done_on:d.date || null,
-        week_id:d.date
-          ? weekStart(d.date)
-          : null
+
+        text:
+          d.text,
+
+        done_on:
+          d.date || null,
+
+        week_id:
+          d.date
+            ? weekStart(d.date)
+            : null
       };
+
 
       if(
         ui.edit &&
@@ -3558,7 +4277,9 @@ async function saveCollection(
 
         if(error) throw error;
 
-        toast('Task updated');
+        toast(
+          'Task updated'
+        );
 
       }else{
 
@@ -3570,11 +4291,14 @@ async function saveCollection(
 
         if(error) throw error;
 
-        toast('Task added');
+        toast(
+          'Task added'
+        );
       }
     }
 
-    ui.edit = null;
+
+    ui.edit=null;
 
     await refresh();
 
@@ -3592,7 +4316,9 @@ async function saveCollection(
 }
 
 
-/* ---------- delete collection item ---------- */
+/* =========================================================
+   DELETE COLLECTION ITEM
+   ========================================================= */
 
 async function deleteItem(
   key,
@@ -3619,11 +4345,13 @@ async function deleteItem(
 
     if(error) throw error;
 
-    ui.edit = null;
+    ui.edit=null;
 
     await refresh();
 
-    toast('Deleted');
+    toast(
+      'Deleted'
+    );
 
     render();
 
@@ -3639,11 +4367,30 @@ async function deleteItem(
 }
 
 
-/* ---------- remove invoice ---------- */
+/* =========================================================
+   REMOVE SPECIFIC INVOICE
+   ========================================================= */
 
-async function removeInvoice(c){
+async function removeInvoice(
+  c,
+  invoiceId
+){
 
-  if(!c.invoice) return;
+  const invoice =
+    (c.invoices||[])
+      .find(
+        i=>i.id===invoiceId
+      );
+
+  if(!invoice){
+
+    toast(
+      'Invoice not found'
+    );
+
+    return;
+  }
+
 
   try{
 
@@ -3652,11 +4399,13 @@ async function removeInvoice(c){
     } = await sb
       .from('invoices')
       .delete()
-      .eq('id',c.invoice.id);
+      .eq('id',invoice.id);
 
     if(error) throw error;
 
     await refresh();
+
+    ui.invoiceEdit=null;
 
     toast(
       'Invoice removed'
@@ -3676,9 +4425,11 @@ async function removeInvoice(c){
 }
 
 
-/* ---------- install app ---------- */
+/* =========================================================
+   INSTALL APP
+   ========================================================= */
 
-let deferredPrompt = null;
+let deferredPrompt=null;
 
 const isStandalone = () =>
   (
@@ -3715,8 +4466,11 @@ function syncInstall(){
 window.addEventListener(
   'beforeinstallprompt',
   e=>{
+
     e.preventDefault();
+
     deferredPrompt=e;
+
     syncInstall();
   }
 );
@@ -3724,9 +4478,14 @@ window.addEventListener(
 window.addEventListener(
   'appinstalled',
   ()=>{
+
     deferredPrompt=null;
+
     syncInstall();
-    toast('App installed');
+
+    toast(
+      'App installed'
+    );
   }
 );
 
@@ -3752,6 +4511,7 @@ async function installApp(){
       $('#iosHelp');
 
     if(h){
+
       h.classList.toggle(
         'hidden'
       );
@@ -3766,7 +4526,9 @@ async function installApp(){
 }
 
 
-/* ---------- events ---------- */
+/* =========================================================
+   EVENTS
+   ========================================================= */
 
 document.addEventListener(
   'click',
@@ -3818,6 +4580,8 @@ document.addEventListener(
 
         ui.edit=null;
 
+        ui.invoiceEdit=null;
+
         render();
 
         break;
@@ -3835,7 +4599,10 @@ document.addEventListener(
         ui.preview =
           ui.adminClient;
 
-        window.scrollTo(0,0);
+        window.scrollTo(
+          0,
+          0
+        );
 
         render();
 
@@ -3851,25 +4618,85 @@ document.addEventListener(
         break;
 
 
-      case 'mark-paid':
+      /* ---------- invoice ---------- */
 
-        await markPaid(c);
+      case 'new-invoice':
+
+        ui.invoiceEdit='new';
+
+        render();
+
+        window.scrollTo({
+          top:0,
+          behavior:'smooth'
+        });
+
+        break;
+
+
+      case 'edit-invoice':
+
+        ui.invoiceEdit =
+          t.dataset.id;
+
+        render();
+
+        window.scrollTo({
+          top:0,
+          behavior:'smooth'
+        });
+
+        break;
+
+
+      case 'cancel-invoice':
+
+        ui.invoiceEdit=null;
+
+        render();
+
+        break;
+
+
+      case 'mark-paid-invoice':
+
+        if(c){
+
+          await markPaid(
+            c,
+            t.dataset.id
+          );
+
+        }
 
         break;
 
 
       case 'remove-invoice':
 
-        await removeInvoice(c);
+        if(c){
+
+          await removeInvoice(
+            c,
+            t.dataset.id
+          );
+
+        }
 
         break;
 
 
+      /* ---------- collections ---------- */
+
       case 'edit':
 
         ui.edit = {
-          key:t.dataset.key,
-          id:t.dataset.id
+
+          key:
+            t.dataset.key,
+
+          id:
+            t.dataset.id
         };
 
         render();
@@ -3904,7 +4731,9 @@ document.addEventListener(
 );
 
 
-/* ---------- forms ---------- */
+/* =========================================================
+   FORMS
+   ========================================================= */
 
 document.addEventListener(
   'submit',
@@ -3964,17 +4793,23 @@ document.addEventListener(
 );
 
 
-/* ---------- auth state ---------- */
+/* =========================================================
+   AUTH STATE
+   ========================================================= */
 
 if(sb){
 
   sb.auth.onAuthStateChange(
-    (event)=>{
-      if(
-        event==='SIGNED_OUT'
-      ){
+    event=>{
+
+      if(event==='SIGNED_OUT'){
+
         session=null;
+
         ui.preview=null;
+
+        ui.invoiceEdit=null;
+
         render();
       }
     }
@@ -3982,12 +4817,16 @@ if(sb){
 }
 
 
-/* ---------- start ---------- */
+/* =========================================================
+   START
+   ========================================================= */
 
 bootstrap();
 
 
-/* ---------- PWA service worker ---------- */
+/* =========================================================
+   PWA SERVICE WORKER
+   ========================================================= */
 
 if(
   'serviceWorker' in navigator &&
@@ -3999,6 +4838,7 @@ if(
   window.addEventListener(
     'load',
     ()=>{
+
       try{
 
         navigator.serviceWorker
@@ -4015,6 +4855,7 @@ if(
     }
   );
 }
+
 </script>
 
 </body>
