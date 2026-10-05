@@ -1,0 +1,5 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "stackwise-client-portal",
+  "pages_build_output_dir": "."
+}
