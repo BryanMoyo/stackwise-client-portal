@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0e10" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Staywise & Co. client portal: invoices, payments, weekly progress and files.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Staywise">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Staywise & Co. · Client Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f7f7f5; --surface:#ffffff; --surface-2:#f1f1ef;
+  --text:#0f0f10; --muted:#6b6f76; --border:#e8e8e5; --border-strong:#d9d9d5;
+  --blue:#1a6cf0; --logo:#1c4fc4; --blue-soft:#eaf1fe; --btn-bg:#0f0f10; --btn-text:#ffffff;
+  --disabled-bg:#dcdcd9; --disabled-text:#85878c;
+  --amber:#b7791f; --red:#c2412d; --green:#2f8f5b;
+  --shadow:0 1px 2px rgba(15,15,16,.04);
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e0e10; --surface:#161618; --surface-2:#1d1d20;
+    --text:#f3f3f1; --muted:#9a9ea6; --border:#26262a; --border-strong:#34343a;
+    --blue:#5b9bff; --logo:#5b9bff; --blue-soft:#14233f; --btn-bg:#f3f3f1; --btn-text:#0f0f10;
+    --disabled-bg:#2a2a2e; --disabled-text:#6f7279; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e0e10; --surface:#161618; --surface-2:#1d1d20;
+  --text:#f3f3f1; --muted:#9a9ea6; --border:#26262a; --border-strong:#34343a;
+  --blue:#5b9bff; --logo:#5b9bff; --blue-soft:#14233f; --btn-bg:#f3f3f1; --btn-text:#0f0f10;
+  --disabled-bg:#2a2a2e; --disabled-text:#6f7279; --shadow:none;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,p{margin:0}
+.hidden{display:none!important}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 22px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font-weight:600;font-size:15px;cursor:pointer;transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn:active{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-primary{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-text)}
+.btn-primary:hover{background:var(--btn-bg);opacity:.88}
+.btn-primary:active{background:var(--blue);border-color:var(--blue);color:#fff;opacity:1}
+.btn-sm{min-height:36px;padding:0 14px;font-size:13.5px}
+.btn[disabled],.btn.is-off{opacity:.45;pointer-events:none}
+.link{color:var(--blue);font-weight:600;cursor:pointer;background:none;border:0;padding:0;transition:opacity .18s}
+.link:hover{opacity:.7}
+.link.danger{color:var(--red)}
+
+/* ---------- Login ---------- */
+.login{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-height:100vh}
+.login-left{padding:clamp(24px,4vw,48px) clamp(20px,4vw,48px);display:flex;flex-direction:column;justify-content:center;max-width:680px;width:100%;margin:0 auto}
+.mini-brand{margin-bottom:clamp(28px,6vh,64px);color:var(--logo);font-weight:700;font-size:clamp(22px,3vw,28px);letter-spacing:-.02em;line-height:1.1}
+.logo{display:block;color:var(--logo)}
+.login h1{font-size:clamp(46px,7vw,84px);font-weight:800;letter-spacing:-.045em;line-height:.98;margin-bottom:clamp(28px,5vh,52px)}
+.login h1 .dot{color:var(--blue)}
+.pill{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;height:60px;border-radius:999px;border:1px solid var(--border-strong);background:transparent;font-weight:600;font-size:17px;cursor:pointer;margin-bottom:14px;transition:background .18s ease,border-color .18s,color .18s}
+.pill:hover{background:var(--surface-2)}
+.pill:active{background:var(--blue);border-color:var(--blue);color:#fff}
+.pill-black{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-text)}
+.pill-black:hover{background:var(--btn-bg);opacity:.88}
+.pill-black:active{background:var(--blue);border-color:var(--blue);color:#fff;opacity:1}
+.pill svg{width:22px;height:22px;flex:none}
+.or{display:flex;align-items:center;gap:16px;color:var(--muted);font-size:15px;margin:22px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--border-strong)}
+.float{display:block;border:1px solid var(--border-strong);border-radius:6px;padding:10px 14px 8px;margin-bottom:12px;background:var(--surface);transition:border-color .18s,box-shadow .18s;cursor:text}
+.float span{display:block;font-size:13.5px;color:var(--muted);transition:color .18s}
+.float input{display:block;width:100%;border:0;outline:0;background:transparent;font-size:17px;padding:4px 0 2px}
+.float:focus-within{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.float:focus-within span{color:var(--blue)}
+.pill-go{background:var(--disabled-bg);color:var(--disabled-text);border:0;margin:10px 0 0;cursor:not-allowed}
+.pill-go.ready{background:var(--blue);color:#fff;cursor:pointer}
+.pill-go.ready:hover{opacity:.9}
+.err{color:var(--red);font-size:14px;min-height:20px;margin-top:6px}
+.pill-install{height:52px;font-size:16px;margin:14px 0 0;color:var(--blue);border-color:var(--blue)}
+.pill-install:hover{background:var(--blue-soft)}
+.ios-help{background:var(--blue-soft);color:var(--text);border-radius:12px;padding:12px 16px;font-size:14px;margin-top:12px}
+.support{display:block;text-align:center;color:var(--blue);font-weight:600;font-size:15px;margin-top:22px;padding:8px;transition:opacity .18s}
+.support:hover{opacity:.7}
+.copy{text-align:center;color:var(--muted);font-size:13px;margin-top:28px}
+.login-right{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mark{width:min(38vw,460px);aspect-ratio:1;user-select:none}
+.mark .logo{width:100%;height:100%}
+.help-card{position:absolute;right:clamp(20px,3vw,40px);bottom:clamp(20px,4vh,40px);background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;box-shadow:var(--shadow);font-size:14px;color:var(--muted);max-width:220px}
+.help-card b{display:block;color:var(--text);font-weight:600;margin-bottom:2px}
+@media (max-width:860px){
+  .login{grid-template-columns:1fr}
+  .login-right{display:none}
+  .login-left{max-width:560px;min-height:100vh}
+  .pill{height:56px}
+}
+
+/* ---------- App shell ---------- */
+.header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--border)}
+.header-in{max-width:1120px;margin:0 auto;padding:16px clamp(20px,4vw,32px);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:700;letter-spacing:-.015em;line-height:1.2}
+.brand small{display:block;font-weight:500;font-size:12.5px;color:var(--muted);letter-spacing:0}
+.user{display:flex;align-items:center;gap:12px}
+.user-name{text-align:right;line-height:1.25}
+.user-name b{display:block;font-weight:600;font-size:14.5px}
+.user-name span{font-size:12.5px;color:var(--muted)}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--text);color:var(--bg);display:grid;place-items:center;font-weight:600;font-size:13px;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar svg{width:58%;height:58%}
+.logout{font-size:14px;color:var(--muted);background:none;border:0;cursor:pointer;padding:8px 4px;transition:color .18s}
+.logout:hover{color:var(--text)}
+@media (max-width:640px){.user-name{display:none}.header-in{padding:12px 20px}}
+
+.wrap{max-width:1120px;margin:0 auto;padding:clamp(28px,6vw,64px) clamp(20px,4vw,32px) 96px}
+.hello{margin-bottom:clamp(32px,5vw,56px)}
+.hello h1{font-size:clamp(30px,5vw,44px);font-weight:700;letter-spacing:-.035em;line-height:1.1}
+.hello p{color:var(--muted);margin-top:8px}
+.section{margin-bottom:clamp(40px,6vw,72px)}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.section h2{font-size:clamp(22px,3vw,28px);font-weight:700;letter-spacing:-.025em}
+.sub{color:var(--muted);font-size:15px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow)}
+
+/* Invoice */
+.invoice{padding:clamp(24px,4vw,40px);display:grid;grid-template-columns:1fr auto;gap:24px 40px;align-items:end}
+.invoice .title{font-size:20px;font-weight:600;letter-spacing:-.015em;margin:6px 0 2px}
+.invoice .num{color:var(--muted);font-size:14.5px}
+.amount{font-size:clamp(44px,7vw,68px);font-weight:700;letter-spacing:-.045em;line-height:1;margin-top:22px}
+.meta{display:flex;gap:36px;flex-wrap:wrap;margin-top:22px}
+.meta div span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:2px}
+.meta div b{font-weight:600;font-size:15px}
+.invoice-actions{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.empty-inv{padding:28px clamp(24px,4vw,40px);display:flex;align-items:center;gap:14px;font-size:18px;font-weight:600;letter-spacing:-.01em}
+.check{width:32px;height:32px;border-radius:50%;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:none}
+.check svg{width:16px;height:16px}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;padding:5px 12px 5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.status.pending::before{background:var(--amber)}
+.status.overdue::before{background:var(--red)}.status.overdue{color:var(--red)}
+.status.paid::before{background:var(--green)}
+@media (max-width:640px){
+  .invoice{grid-template-columns:1fr}
+  .invoice-actions{align-items:stretch}
+  .invoice-actions .btn{width:100%;min-height:52px}
+  .meta{gap:28px}
+}
+
+/* This week */
+.tasks{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
+.tasks li{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.tick{width:22px;height:22px;border-radius:50%;background:var(--text);color:var(--bg);display:grid;place-items:center;flex:none;margin-top:1px}
+.tick svg{width:12px;height:12px}
+.tasks b{font-weight:600;display:block;letter-spacing:-.005em}
+.tasks small{color:var(--muted);font-size:14px}
+.nothing{color:var(--muted);padding:22px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+
+/* Payments */
+.list{border-top:1px solid var(--border)}
+.pay{display:grid;grid-template-columns:minmax(0,1fr) 150px 190px 100px;gap:16px;align-items:center;padding:18px 0;border-bottom:1px solid var(--border)}
+.pay .d b{font-weight:600;display:block}
+.pay .d small{color:var(--muted);font-size:13.5px}
+.pay .amt{font-weight:600;font-variant-numeric:tabular-nums}
+.pay .dt{color:var(--muted);font-size:14.5px}
+.pay .st{justify-self:end}
+.pay .m{display:none}
+@media (max-width:700px){
+  .pay{grid-template-columns:1fr auto;gap:4px 12px;padding:16px 0}
+  .pay .amt{grid-column:2;grid-row:1;text-align:right}
+  .pay .dt{grid-column:1;grid-row:2}
+  .pay .st{grid-column:2;grid-row:2;justify-self:end}
+}
+
+/* Connections */
+.conn{display:flex;align-items:center;gap:16px;padding:18px 4px;border-bottom:1px solid var(--border);transition:background .18s,padding .18s;border-radius:0;min-height:72px}
+.conn:hover{background:var(--surface-2)}
+.conn .ic{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;font-weight:600;flex:none;font-size:17px}
+.conn .t{flex:1;min-width:0}
+.conn .t b{display:block;font-weight:600}
+.conn .t small{color:var(--muted);font-size:14px}
+.conn .go{color:var(--blue);font-weight:600;font-size:15px;white-space:nowrap}
+
+/* Files */
+.files{padding:clamp(28px,5vw,48px);display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.files .l{display:flex;gap:20px;align-items:center;min-width:0;flex:1 1 360px}
+.folder{width:56px;height:56px;border-radius:16px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:none}
+.folder svg{width:28px;height:28px}
+.files h2{margin-bottom:4px}
+.files p{color:var(--muted);max-width:46ch}
+@media (max-width:640px){.files .btn{width:100%;min-height:54px}}
+
+/* ---------- Admin ---------- */
+.banner{background:var(--blue-soft);color:var(--blue);font-size:14px;font-weight:500}
+.banner div{max-width:1120px;margin:0 auto;padding:10px clamp(20px,4vw,32px);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.admin-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:28px}
+.select{height:46px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);padding:0 40px 0 18px;font-weight:600;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%236b6f76' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;min-width:220px;max-width:100%;cursor:pointer}
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--border);margin-bottom:32px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:none;border:0;padding:12px 16px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .18s,border-color .18s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--blue);border-color:var(--blue)}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px;max-width:760px}
+.form .full{grid-column:1/-1}
+.f label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.f input,.f select{width:100%;height:46px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);padding:0 14px;outline:0;transition:border-color .18s,box-shadow .18s}
+.f input:focus,.f select:focus{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.f-actions{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.av-edit{display:flex;align-items:center;gap:16px}
+.av-edit .avatar{width:56px;height:56px;font-size:18px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.item b{font-weight:600;display:block}.item small{color:var(--muted);font-size:13.5px}
+.item .acts{display:flex;gap:16px;flex:none}
+.sub-title{font-size:17px;font-weight:600;margin:40px 0 14px;letter-spacing:-.01em}
+.note{color:var(--muted);font-size:14px;max-width:62ch;margin-bottom:24px}
+@media (max-width:640px){.form{grid-template-columns:1fr}.select{width:100%}.item{align-items:flex-start;flex-direction:column;gap:8px}}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--btn-bg);color:var(--btn-text);padding:12px 20px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" role="status"></div>
+
+<script>
+/* =========================================================
+   Staywise & Co. Client Portal  —  front-end prototype
+   Data is stored in this browser (localStorage). For real
+   use, move DB + auth to a backend (see notes in the chat).
+   ========================================================= */
+const KEY='staywise_portal_v1', SKEY='staywise_session_v1';
+const ADMIN={email:'admin@staywise.co',password:'admin'};
+
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,(m||1)-1,d||1)};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const today=()=>iso(new Date());
+const offs=n=>iso(addDays(new Date(),n));
+const weekStart=s=>iso(addDays(parse(s),-((parse(s).getDay()+6)%7))); // Monday
+const fmtDate=(s,withYear=true)=>s?parse(s).toLocaleDateString('en-US',withYear?{month:'long',day:'numeric',year:'numeric'}:{month:'long',day:'numeric'}):'—';
+const weekRange=()=>{const a=parse(weekStart(today())),b=addDays(a,6);
+  return a.getFullYear()===b.getFullYear()?`${fmtDate(iso(a),false)} – ${fmtDate(iso(b),false)}, ${b.getFullYear()}`:`${fmtDate(iso(a))} – ${fmtDate(iso(b))}`};
+const money=(n,cur='USD')=>{try{return new Intl.NumberFormat('en-US',{style:'currency',currency:(cur||'USD').toUpperCase()}).format(Number(n)||0)}catch(e){return `${Number(n||0).toFixed(2)} ${cur}`}};
+const safeUrl=u=>/^https?:\/\//i.test(u||'')?u:'';
+const uid=()=>Math.random().toString(36).slice(2,9);
+const initials=n=>(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+let toastT;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)};
+
+const FACE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6"/></svg>';
+const I={
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  folder:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>'
+};
+
+/* ---------- data ---------- */
+function seed(){
+  const mon=weekStart(today());
+  const cap=n=>{const d=offs(0), t=iso(addDays(parse(mon),n));return t>d?d:t};
+  return {clients:[
+    {id:'c1',name:'Amelia Hart',company:'Hart & Bloom Studio',email:'amelia@hartbloom.com',password:'demo',avatar:'',
+     drive:'https://drive.google.com/drive/folders/',
+     invoice:{number:'STW-001',description:'Website Development',amount:250,currency:'USD',issued:offs(-3),due:offs(5),status:'Pending',url:'https://example.com/invoice-STW-001.pdf'},
+     payments:[
+       {id:uid(),description:'Website Deposit',amount:100,currency:'USD',paid:offs(-7),method:'Bank transfer',reference:'DEP-0928',status:'Paid'},
+       {id:uid(),description:'Monthly Retainer',amount:150,currency:'USD',paid:offs(-30),method:'Card',reference:'RET-0905',status:'Paid'}],
+     tasks:[
+       {id:uid(),text:'Homepage redesign completed',date:cap(0)},
+       {id:uid(),text:'Google Analytics connected',date:cap(1)},
+       {id:uid(),text:'Mobile responsiveness fixed',date:cap(2)},
+       {id:uid(),text:'Contact form deployed',date:cap(3)},
+       {id:uid(),text:'Brand assets collected (previous week)',date:offs(-9)}]},
+    {id:'c2',name:'Jonas Weber',company:'Northwind Cafe',email:'jonas@northwind.example',password:'demo',avatar:'',
+     drive:'',invoice:null,
+     payments:[{id:uid(),description:'Brand Refresh',amount:480,currency:'USD',paid:offs(-14),method:'Bank transfer',reference:'BR-221',status:'Paid'}],
+     tasks:[]}
+  ]};
+}
+let db;
+function load(){try{const r=localStorage.getItem(KEY);db=r?JSON.parse(r):seed()}catch(e){db=seed()}if(!db||!db.clients)db=seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
+let session=null;
+function loadSession(){try{session=JSON.parse(sessionStorage.getItem(SKEY)||'null')}catch(e){session=null}}
+function saveSession(){try{session?sessionStorage.setItem(SKEY,JSON.stringify(session)):sessionStorage.removeItem(SKEY)}catch(e){}}
+const client=id=>db.clients.find(c=>c.id===id);
+const ui={tab:'profile',edit:null,adminClient:null,preview:null};
+
+/* ---------- views ---------- */
+const app=$('#app');
+function render(){
+  if(!session) return renderLogin();
+  if(session.role==='client'){const c=client(session.clientId);if(!c){session=null;saveSession();return renderLogin()}return renderPortal(c,false)}
+  if(session.role==='admin'){
+    if(ui.preview&&client(ui.preview)) return renderPortal(client(ui.preview),true);
+    return renderAdmin();
+  }
+}
+
+function renderLogin(){
+  app.innerHTML=`
+  <main class="login">
+    <section class="login-left">
+      <div class="mini-brand">Staywise &amp; Co.</div>
+      <h1>Your work,<br>in one place<span class="dot">.</span></h1>
+      <button class="pill pill-black" data-action="demo-client">Continue as demo client</button>
+      <button class="pill" data-action="demo-admin">Open admin demo</button>
+      <div class="or"><span>or</span></div>
+      <form id="loginForm" autocomplete="on" novalidate>
+        <label class="float"><span>Email</span><input id="em" type="email" name="email" autocomplete="username" inputmode="email"></label>
+        <label class="float"><span>Password</span><input id="pw" type="password" name="password" autocomplete="current-password"></label>
+        <div class="err" id="err" aria-live="polite"></div>
+        <button class="pill pill-go" id="go" type="submit" disabled>Continue</button>
+      </form>
+      <button class="pill pill-install hidden" id="installBtn" type="button" data-action="install">Install app</button>
+        <p class="ios-help hidden" id="iosHelp">To install on iPhone or iPad: tap the Share button in Safari, then choose “Add to Home Screen”.</p>
+      <a class="support" href="https://wa.me/48504298321" target="_blank" rel="noopener">Support</a>
+      <p class="copy">© 2026 Staywise &amp; Co.</p>
+    </section>
+    <section class="login-right" aria-hidden="true">
+      <div class="mark"><svg class="logo" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="miter" role="img" aria-label="Staywise &amp; Co."><rect x="57" y="33" width="76" height="17"/><rect x="35" y="56" width="72" height="17"/><rect x="57" y="78" width="76" height="17"/><rect x="33" y="100" width="72" height="17"/></svg></div>
+      <div class="help-card"><b>Need access?</b>Ask your Staywise &amp; Co. contact for your sign-in details.</div>
+    </section>
+  </main>`;
+  const em=$('#em'),pw=$('#pw'),go=$('#go');
+  const chk=()=>{const ok=em.value.trim()&&pw.value;go.disabled=!ok;go.classList.toggle('ready',!!ok)};
+  syncInstall();
+  em.addEventListener('input',chk);pw.addEventListener('input',chk);
+  $('#loginForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const email=em.value.trim().toLowerCase(),pass=pw.value;
+    if(email===ADMIN.email&&pass===ADMIN.password){return signIn({role:'admin'})}
+    const c=db.clients.find(c=>c.email.toLowerCase()===email&&c.password===pass);
+    if(c)return signIn({role:'client',clientId:c.id});
+    $('#err').textContent='That email and password don’t match. Please try again.';
+  });
+}
+function signIn(s){session=s;saveSession();ui.preview=null;window.scrollTo(0,0);render()}
+function signOut(){session=null;ui.preview=null;saveSession();render()}
+
+function header(name,sub,avatarHtml){
+  return `<header class="header"><div class="header-in">
+    <div class="brand">Staywise &amp; Co.<small>${esc(sub)}</small></div>
+    <div class="user"><div class="user-name"><b>${esc(name)}</b><span>${esc(sub==='Client Portal'?'':sub)}</span></div>
+    <div class="avatar" aria-hidden="true">${avatarHtml}</div>
+    <button class="logout" data-action="logout">Log out</button></div></div></header>`;
+}
+const avatarHtml=c=>safeUrl(c.avatar)||/^data:image\//.test(c.avatar||'')?`<img src="${esc(c.avatar)}" alt="">`:FACE;
+
+function renderPortal(c,preview){
+  const inv=c.invoice;
+  const wk=weekStart(today());
+  const tasks=(c.tasks||[]).filter(t=>weekStart(t.date)===wk).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  const payments=[...(c.payments||[])].sort((a,b)=>(b.paid||'').localeCompare(a.paid||''));
+  const first=c.name.split(' ')[0];
+  let invHtml;
+  if(inv&&inv.status!=='Paid'){
+    const overdue=inv.due&&inv.due<today();
+    const st=overdue?'Overdue':'Pending';
+    const link=safeUrl(inv.url);
+    invHtml=`<div class="panel invoice">
+      <div>
+        <div class="eyebrow">Active Invoice</div>
+        <div class="title">${esc(inv.description)}</div>
+        <div class="num">Invoice #${esc(inv.number)}</div>
+        <div class="amount">${money(inv.amount,inv.currency)}</div>
+        <div class="meta">
+          <div><span>Status</span><b class="status ${st.toLowerCase()}">${st}</b></div>
+          <div><span>Due</span><b>${fmtDate(inv.due)}</b></div>
+          <div><span>Issued</span><b>${fmtDate(inv.issued)}</b></div>
+        </div>
+      </div>
+      <div class="invoice-actions">
+        ${link?`<a class="btn btn-primary" href="${esc(link)}" target="_blank" rel="noopener">View Invoice</a>`
+              :`<button class="btn btn-primary" data-action="toast" data-msg="Your invoice PDF isn’t available yet.">View Invoice</button>`}
+      </div></div>`;
+  } else {
+    invHtml=`<div class="panel empty-inv"><span class="check">${I.check}</span>No outstanding invoices</div>`;
+  }
+  const driveUrl=safeUrl(c.drive);
+  app.innerHTML=`
+  ${preview?`<div class="banner"><div><span>Previewing the portal as ${esc(c.name)}</span><button class="link" data-action="exit-preview">Back to admin</button></div></div>`:''}
+  ${header(c.name,'Client Portal',avatarHtml(c))}
+  <main class="wrap">
+    <div class="hello"><h1>Hello, ${esc(first)}.</h1><p>${esc(c.company||'')}${c.company?' · ':''}Here’s where everything stands.</p></div>
+
+    <section class="section">${invHtml}</section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>This Week</h2><p class="sub">${weekRange()}</p></div></div>
+      ${tasks.length?`<ul class="tasks">${tasks.map(t=>`<li><span class="tick">${I.check}</span><div><b>${esc(t.text)}</b><small>${fmtDate(t.date,false)}</small></div></li>`).join('')}</ul>`
+        :`<p class="nothing">Nothing completed yet this week.</p>`}
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Payment History</h2></div>
+      ${payments.length?`<div class="list">${payments.map(p=>`
+        <div class="pay">
+          <div class="d"><b>${esc(p.description)}</b>${p.method||p.reference?`<small>${esc([p.method,p.reference].filter(Boolean).join(' · '))}</small>`:''}</div>
+          <div class="amt">${money(p.amount,p.currency)}</div>
+          <div class="dt">${p.status==='Paid'?'Paid · ':''}${fmtDate(p.paid)}</div>
+          <div class="st"><span class="status ${p.status==='Paid'?'paid':'pending'}">${esc(p.status||'Paid')}</span></div>
+        </div>`).join('')}</div>`:`<p class="nothing">No payments recorded yet.</p>`}
+    </section>
+
+
+    <section class="section">
+      <div class="panel files">
+        <div class="l"><span class="folder">${I.folder}</span>
+          <div><h2>Your Files</h2><p>All of your Staywise &amp; Co. files are stored securely in your shared Google Drive.</p></div></div>
+        ${driveUrl?`<a class="btn btn-primary" href="${esc(driveUrl)}" target="_blank" rel="noopener">Open Google Drive</a>`
+                  :`<button class="btn btn-primary" data-action="toast" data-msg="Your Drive folder is being set up.">Open Google Drive</button>`}
+      </div>
+    </section>
+  </main>`;
+}
+
+/* ---------- admin ---------- */
+const COLL={
+  payments:{title:'Payment history',empty:'No payments yet.',
+    fields:[['description','Description','text','full'],['amount','Amount','number'],['currency','Currency','text'],['paid','Date paid','date'],['method','Payment method','text'],['reference','Reference','text'],['status','Status','select:Paid,Pending,Refunded']],
+    row:p=>[`${p.description} · ${money(p.amount,p.currency)}`,`${p.status} · ${fmtDate(p.paid)}${p.method?' · '+p.method:''}${p.reference?' · '+p.reference:''}`],
+    blank:c=>({description:'',amount:'',currency:(c.invoice&&c.invoice.currency)||'USD',paid:today(),method:'Bank transfer',reference:'',status:'Paid'})},
+  tasks:{title:'Weekly tasks',empty:'No tasks yet.',
+    fields:[['text','Task description','text','full'],['date','Completion date','date']],
+    row:t=>[t.text,`${fmtDate(t.date)} · week of ${fmtDate(weekStart(t.date),false)}${weekStart(t.date)===weekStart(today())?' (current week)':''}`],
+    blank:()=>({text:'',date:today()})},
+};
+const field=(name,label,type,val,cls='')=>{
+  if(type.startsWith('select:')){const o=type.slice(7).split(',');
+    return `<div class="f ${cls}"><label>${label}</label><select name="${name}">${o.map(v=>`<option ${v===val?'selected':''}>${v}</option>`).join('')}</select></div>`}
+  return `<div class="f ${cls}"><label>${label}</label><input name="${name}" type="${type}" ${type==='number'?'step="0.01" min="0"':''} value="${esc(val)}" ${['text','number','date','url'].includes(type)&&name!=='icon'&&name!=='reference'&&name!=='method'&&name!=='currency'?'required':''}></div>`};
+
+function renderAdmin(){
+  if(!client(ui.adminClient)) ui.adminClient=db.clients[0]&&db.clients[0].id;
+  const c=client(ui.adminClient);
+  const tabs=[['profile','Profile'],['invoice','Active invoice'],['payments','Payments'],['tasks','Weekly tasks']];
+  let body='';
+  if(!c) body='<p class="nothing">No clients yet. Add your first client.</p>';
+  else if(ui.tab==='profile') body=adminProfile(c);
+  else if(ui.tab==='invoice') body=adminInvoice(c);
+  else body=adminColl(c,ui.tab);
+  app.innerHTML=`${header('Staywise Admin','Admin',FACE)}
+  <main class="wrap">
+    <div class="hello"><h1>Manage clients</h1><p>Everything clients see in their portal is edited here.</p></div>
+    <div class="admin-bar">
+      <select class="select" id="clientSel" aria-label="Client">${db.clients.map(x=>`<option value="${x.id}" ${x.id===ui.adminClient?'selected':''}>${esc(x.name)}${x.company?' — '+esc(x.company):''}</option>`).join('')}</select>
+      <button class="btn" data-action="add-client">+ Add client</button>
+      ${c?`<button class="btn" data-action="preview">View as client</button>`:''}
+    </div>
+    ${c?`<nav class="tabs">${tabs.map(([k,l])=>`<button class="tab ${ui.tab===k?'on':''}" data-action="tab" data-tab="${k}">${l}</button>`).join('')}</nav>`:''}
+    ${body}
+  </main>`;
+  const sel=$('#clientSel');if(sel)sel.addEventListener('change',e=>{ui.adminClient=e.target.value;ui.edit=null;render()});
+  const file=$('#avFile');if(file)file.addEventListener('change',onAvatar);
+}
+
+function adminProfile(c){
+  return `<form class="form" data-form="profile">
+    <div class="f full av-edit"><div class="avatar" id="avPrev">${avatarHtml(c)}</div>
+      <div><label for="avFile" class="btn btn-sm" style="cursor:pointer">Upload photo</label><input id="avFile" type="file" accept="image/*" class="hidden"></div>
+      <input type="hidden" name="avatar" id="avVal" value="${esc(c.avatar||'')}"></div>
+    ${field('name','Client name','text',c.name)}
+    ${field('company','Company name','text',c.company)}
+    ${field('email','Email (login)','email',c.email)}
+    ${field('password','Password / access code','text',c.password)}
+    ${field('drive','Google Drive folder URL','url',c.drive,'full').replace(' required','')}
+    <div class="f-actions"><button class="btn btn-primary" type="submit">Save client</button></div>
+  </form>`;
+}
+function adminInvoice(c){
+  const i=c.invoice||{number:'',description:'',amount:'',currency:'USD',issued:today(),due:offs(14),status:'Pending',url:''};
+  return `<p class="note">${c.invoice?'This is the invoice the client sees at the top of their dashboard.':'No active invoice. Create one below and the client will see it immediately.'}</p>
+  <form class="form" data-form="invoice">
+    ${field('number','Invoice number','text',i.number)}
+    ${field('description','Description','text',i.description)}
+    ${field('amount','Amount','number',i.amount)}
+    ${field('currency','Currency','text',i.currency)}
+    ${field('issued','Issue date','date',i.issued)}
+    ${field('due','Due date','date',i.due)}
+    ${field('status','Status','select:Pending,Paid',i.status)}
+    ${field('url','Invoice URL / PDF URL','url',i.url).replace(' required','')}
+    <div class="f-actions">
+      <button class="btn btn-primary" type="submit">Save invoice</button>
+      ${c.invoice?`<button class="btn" type="button" data-action="mark-paid">Mark as paid</button><button class="btn" type="button" data-action="remove-invoice">Remove invoice</button>`:''}
+    </div>
+  </form>
+  ${c.invoice?'<p class="note" style="margin-top:20px">“Mark as paid” moves the invoice into Payment History and clears the active invoice.</p>':''}`;
+}
+function adminColl(c,key){
+  const cfg=COLL[key],items=c[key]||[];
+  const sorted=[...items].sort((a,b)=>(b.paid||b.date||'').localeCompare(a.paid||a.date||''));
+  const editing=ui.edit&&ui.edit.key===key?items.find(x=>x.id===ui.edit.id):null;
+  const val=editing||cfg.blank(c);
+  return `<form class="form" data-form="${key}">
+    ${cfg.fields.map(([n,l,t,cls])=>field(n,l,t,val[n]??'',cls||'')).join('')}
+    <div class="f-actions"><button class="btn btn-primary" type="submit">${editing?'Update':'Add'}</button>${editing?`<button class="btn" type="button" data-action="cancel-edit">Cancel</button>`:''}</div>
+  </form>
+  <h3 class="sub-title">${cfg.title}</h3>
+  ${sorted.length?`<div class="list">${sorted.map(x=>{const [a,b]=cfg.row(x);return `<div class="item"><div><b>${esc(a)}</b><small>${esc(b)}</small></div>
+    <div class="acts"><button class="link" data-action="edit" data-key="${key}" data-id="${x.id}">Edit</button><button class="link danger" data-action="del" data-key="${key}" data-id="${x.id}">Delete</button></div></div>`}).join('')}</div>`:`<p class="nothing">${cfg.empty}</p>`}`;
+}
+
+function onAvatar(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{const img=new Image();img.onload=()=>{
+    const s=128,cv=document.createElement('canvas');cv.width=cv.height=s;const x=cv.getContext('2d');
+    const m=Math.min(img.width,img.height);x.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,s,s);
+    const d=cv.toDataURL('image/jpeg',.82);$('#avVal').value=d;$('#avPrev').innerHTML=`<img src="${d}" alt="">`;
+  };img.src=r.result};
+  r.readAsDataURL(f);
+}
+
+function markPaid(c){
+  const i=c.invoice;if(!i)return;
+  c.payments.push({id:uid(),description:`${i.description} · #${i.number}`,amount:Number(i.amount),currency:i.currency,paid:today(),method:'Bank transfer',reference:i.number,status:'Paid'});
+  c.invoice=null;save();
+}
+
+/* ---------- install app (PWA) ---------- */
+let deferredPrompt=null;
+const isStandalone=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function syncInstall(){
+  const b=$('#installBtn');if(!b)return;
+  b.classList.toggle('hidden',isStandalone()||!(deferredPrompt||isIOS()));
+}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;syncInstall()});
+window.addEventListener('appinstalled',()=>{deferredPrompt=null;syncInstall();toast('App installed')});
+async function installApp(){
+  if(deferredPrompt){
+    try{deferredPrompt.prompt();await deferredPrompt.userChoice}catch(e){}
+    deferredPrompt=null;syncInstall();
+  } else if(isIOS()){
+    const h=$('#iosHelp');if(h)h.classList.toggle('hidden');
+  } else toast('Use your browser menu to install this app.');
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-action]');if(!t)return;
+  const a=t.dataset.action,c=client(ui.adminClient);
+  switch(a){
+    case 'demo-client':signIn({role:'client',clientId:db.clients[0].id});break;
+    case 'demo-admin':signIn({role:'admin'});break;
+    case 'logout':signOut();break;
+    case 'install':installApp();break;
+    case 'toast':toast(t.dataset.msg);break;
+    case 'tab':ui.tab=t.dataset.tab;ui.edit=null;render();break;
+    case 'add-client':{const n={id:uid(),name:'New client',company:'',email:`client${db.clients.length+1}@example.com`,password:'welcome',avatar:'',drive:'',invoice:null,payments:[],tasks:[]};
+      db.clients.push(n);save();ui.adminClient=n.id;ui.tab='profile';render();toast('Client added');break}
+    case 'preview':ui.preview=ui.adminClient;window.scrollTo(0,0);render();break;
+    case 'exit-preview':ui.preview=null;render();break;
+    case 'mark-paid':markPaid(c);toast('Invoice marked as paid');render();break;
+    case 'remove-invoice':c.invoice=null;save();toast('Invoice removed');render();break;
+    case 'edit':ui.edit={key:t.dataset.key,id:t.dataset.id};render();window.scrollTo({top:0,behavior:'smooth'});break;
+    case 'cancel-edit':ui.edit=null;render();break;
+    case 'del':c[t.dataset.key]=c[t.dataset.key].filter(x=>x.id!==t.dataset.id);save();ui.edit=null;toast('Deleted');render();break;
+  }
+});
+document.addEventListener('submit',e=>{
+  const f=e.target.closest('[data-form]');if(!f)return;
+  e.preventDefault();
+  const c=client(ui.adminClient),k=f.dataset.form,d=Object.fromEntries(new FormData(f).entries());
+  if(k==='profile'){Object.assign(c,d);toast('Client saved')}
+  else if(k==='invoice'){
+    d.amount=Number(d.amount);c.invoice=d;
+    if(d.status==='Paid'){markPaid(c);toast('Invoice marked as paid')}else toast('Invoice saved');
+  } else {
+    if(d.amount!==undefined)d.amount=Number(d.amount);
+    if(d.currency!==undefined)d.currency=(d.currency||'USD').toUpperCase();
+    if(k==='tasks')d.weekId=weekStart(d.date);
+    const list=c[k];
+    if(ui.edit&&ui.edit.key===k){const it=list.find(x=>x.id===ui.edit.id);Object.assign(it,d);toast('Updated')}
+    else{list.push({id:uid(),...d});toast('Added')}
+    ui.edit=null;
+  }
+  save();render();
+});
+
+load();loadSession();render();
+
+/* ---------- PWA: service worker ---------- */
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load',()=>{try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}});
+}
+</script>
+</body>
+</html>
